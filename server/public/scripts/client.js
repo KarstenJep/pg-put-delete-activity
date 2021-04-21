@@ -1,3 +1,5 @@
+//const { response } = require("express");
+
 $(document).ready(function(){
   console.log('jQuery sourced.');
   refreshBooks();
@@ -6,8 +8,8 @@ $(document).ready(function(){
 
 function addClickHandlers() {
   $('#submitBtn').on('click', handleSubmit);
-
   // TODO - Add code for edit & delete buttons
+  $('#bookShelf').on('click', '.delete-book', deleteSongHandler)
 }
 
 function handleSubmit() {
@@ -58,7 +60,30 @@ function renderBooks(books) {
       <tr>
         <td>${book.title}</td>
         <td>${book.author}</td>
+        <td>
+          <button class="delete-book" data-id="${book.id}">Delete</button>
+        </td>
       </tr>
     `);
   }
+}
+
+// Handler for delete button. Call AJAX to delete book
+function deleteSongHandler() {
+    deleteBook($(this).data("id"));
+}
+
+// Delete AJAX call for deleting book
+function deleteBook(bookId) {
+    $.ajax({
+      method: 'DELETE',
+      url: `/books/${bookId}`, 
+    })
+    .then(response => {
+      console.log('deleted it');
+      renderBooks();
+    })
+    .catch(error => {
+      alert('error on delete line 50', error)
+    })
 }
