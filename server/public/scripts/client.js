@@ -10,6 +10,7 @@ function addClickHandlers() {
   $('#submitBtn').on('click', handleSubmit);
   // TODO - Add code for edit & delete buttons
   $('#bookShelf').on('click', '.delete-book', deleteSongHandler)
+  $('#bookShelf').on('click', '.mark-read', markReadHandler)
 }
 
 function handleSubmit() {
@@ -17,6 +18,7 @@ function handleSubmit() {
   let book = {};
   book.author = $('#author').val();
   book.title = $('#title').val();
+  book.read = false;
   addBook(book);
 }
 
@@ -56,11 +58,15 @@ function renderBooks(books) {
   for(let i = 0; i < books.length; i += 1) {
     let book = books[i];
     // For each book, append a new row to our table
+    //console.log('in renderBooks', book.title, book.author, book.isRead);
+    
     $('#bookShelf').append(`
       <tr>
         <td>${book.title}</td>
         <td>${book.author}</td>
+        <td>${book.isRead}</td>
         <td>
+          <button class="mark-read" data-id="${book.id}">Mark as Read</button>
           <button class="delete-book" data-id="${book.id}">Delete</button>
         </td>
       </tr>
@@ -68,8 +74,33 @@ function renderBooks(books) {
   }
 }
 
+// Handler for mark as read button
+function markReadHandler() {
+  markRead($(this).data("id"), "true");
+}
+
+function markRead(bookId, hasRead) {
+  console.log('In markRead');
+  $.ajax({
+    method: 'PUT',
+    url: `/books/${bookId}`,
+    data: {
+      read: hasRead
+    }
+  })
+  .then(response => {
+    console.log('Marked read', bookId);
+    refreshBooks();
+  })
+  .catch(error => {
+    alert('error on markRead', error)
+  })
+}
+
 // Handler for delete button. Call AJAX to delete book
 function deleteSongHandler() {
+  console.log('Deleting', this);
+  
     deleteBook($(this).data("id"));
 }
 
@@ -80,10 +111,10 @@ function deleteBook(bookId) {
       url: `/books/${bookId}`, 
     })
     .then(response => {
-      console.log('deleted it');
-      renderBooks();
+      console.log('deleted book', bookId);
+      refreshBooks();
     })
     .catch(error => {
-      alert('error on delete line 50', error)
+      alert('error on deleteBook', error)
     })
 }
